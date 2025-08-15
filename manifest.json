@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "App Code Search",
+  "version": "1.0",
+  "description": "Полнотекстовый поиск по приложениям Retool",
+  "permissions": [
+    "cookies",
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://admin.walletbot.net/*"
+  ],
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": {
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    }
+  }
+}
