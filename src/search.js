@@ -70,17 +70,15 @@ export class Search {
   }
 
   static deepSearchInApp(appContent, searchText, isCaseSensitive = false) {
+    const appStateKey = isCaseSensitive ? 'appState' : 'appstate';
     try {
       if (typeof appContent === 'string') {
         appContent = JSON.parse(appContent);
       }
-      const appState = JSON.parse( appContent.page.data?.appState || '{}' );
-      // const skipKeys = [
-      //   'appMaxWidth', 'appStyles', 'appTesting', 'experimentalFeatures',
-      //   'folders', 'internationalizationSettings',
-      // ];
+      const appState = JSON.parse( appContent.page.data?.[appStateKey] || '{}' );
+
       let removeKeys = [
-        'plugins', '~#iOM', '^0', 'appState', 'v', '~#iR', '^2R', '^2K'
+        'plugins', '~#iOM', '^0', appStateKey, 'v', '~#iR', '^2R', '^2K'
       ];
       if (!isCaseSensitive) {
         removeKeys = removeKeys.map(k => k.toLowerCase());
@@ -123,7 +121,7 @@ export class Search {
         return null;
       }
 
-      let searchResult = recursiveSearch(appState, isCaseSensitive ? 'appState' : 'appState');
+      let searchResult = recursiveSearch(appState, appStateKey);
 
       if (searchResult?.length) {
         for (let i = 0; i < searchResult?.length; i++) {
