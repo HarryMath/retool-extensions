@@ -17,7 +17,8 @@ export const MESSAGES = {
   SEARCH_TOO_SHORT: 'Текст поиска должен быть длинной 5 символов или более',
   TOKEN_ERROR: 'Не удалось получить токен',
   LOADING_APPS: 'Загружаю список приложений...',
-  SEARCHING_PROGRESS: (current, total) => `Идет поиск (${current} из ${total}) ...`,
+  SEARCHING_PROGRESS: (current, total, appName) => `Идет поиск (${current} из ${total}) ... 
+<span style="opacity: 0.5">${appName}</span>`,
   LOAD_ERROR: (status) => `Ошибка загрузки ${status}`,
   NO_RESULTS: 'Приложения с указанным кодом не найдены',
   SEARCH_ERRORS: 'Ошибки при поиске:'

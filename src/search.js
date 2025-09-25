@@ -42,8 +42,8 @@ export class Search {
 
     for (let i = 0; i < pages.length; i++) {
       const page = pages[i];
-      
-      UIUtils.showSearchProgress(i + 1, pages.length);
+
+      UIUtils.showSearchProgress(i + 1, pages.length, page.name);
 
       try {
         let appContent = await retoolApi.getAppContent(page.uuid, xsrfToken);
