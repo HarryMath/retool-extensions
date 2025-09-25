@@ -15,10 +15,6 @@ class HttpClient {
 
     const requestOptions = { ...defaultOptions, ...options };
 
-    console.log('try to fetch: ', {
-      fullUrl,
-      requestOptions
-    });
     const response = await fetch(fullUrl, requestOptions);
     
     if (!response.ok) {

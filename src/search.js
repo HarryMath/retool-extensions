@@ -6,6 +6,8 @@ import { UIUtils } from './utils/ui-utils.js';
 
 export class Search {
 
+  static IN_CHANGES_HISTORY = 'In changes history';
+
   static validateSearchInput(searchText) {
     return searchText.length >= VALIDATION.MIN_SEARCH_LENGTH;
   }
@@ -53,6 +55,12 @@ export class Search {
         
         if (isFound) {
           const usages = Search.deepSearchInApp(appContent, searchText, isCaseSensitive) || [];
+          if (usages.length === 1 && usages.includes(Search.IN_CHANGES_HISTORY)) {
+            continue; // skip this app because found only in changes history
+          }
+          if (usages.length === 0) {
+            console.log('Usages length 0 for app: ', page.name);
+          }
           foundApps.push({
             name: page.name,
             usages
@@ -70,58 +78,98 @@ export class Search {
   }
 
   static deepSearchInApp(appContent, searchText, isCaseSensitive = false) {
-    const appStateKey = isCaseSensitive ? 'appState' : 'appstate';
+    const prepareCase = (val) => isCaseSensitive ? val : val.toLowerCase();
+    const appStateKey = prepareCase('appState');
+    const changesRecordKey = prepareCase('changesRecord');
+    const moduleNameKey = prepareCase('moduleName');
+
+    const joinSymbol = ' -> ';
+    let removeKeys = [
+      'plugins', '~#iOM', '^0', appStateKey, 'v', '~#iR', '^2R', '^2K'
+    ];
+    if (!isCaseSensitive) {
+      removeKeys = removeKeys.map(k => k.toLowerCase());
+    }
+
     try {
       if (typeof appContent === 'string') {
         appContent = JSON.parse(appContent);
       }
-      const appState = JSON.parse( appContent.page.data?.[appStateKey] || '{}' );
+      // window.appContent = appContent;
+      // console.log({ appContent });
 
-      let removeKeys = [
-        'plugins', '~#iOM', '^0', appStateKey, 'v', '~#iR', '^2R', '^2K'
-      ];
-      if (!isCaseSensitive) {
-        removeKeys = removeKeys.map(k => k.toLowerCase());
-      }
+      let appState = appContent.page.data?.[appStateKey] || '{}';
 
-      const joinSymbol = ' -> ';
+      let searchResult;
 
-      const recursiveSearch = (content, previousKey) => {
-        if (!content || ['boolean', 'number'].includes(typeof content)) {
+      if (appState.includes(searchText)) {
+        appState = JSON.parse(appState);
+
+        const recursiveSearch = (content, previousKey) => {
+          if (!content || ['boolean', 'number'].includes(typeof content)) {
+            return null;
+          }
+          if (typeof content === 'string') {
+            return content.includes(searchText)
+              ? [previousKey + '->' + content]
+              : null;
+          }
+          if (Array.isArray(content)) {
+            const result = [];
+            let foundAtPrevious = false;
+            for (let i = 0; i < content.length; i++) {
+              const key = (typeof content[i - 1] === 'string' && !foundAtPrevious)
+                ? content[i - 1]
+                : String(i);
+              const subResult = recursiveSearch(content[i], previousKey + joinSymbol + key);
+              if (subResult?.length) {
+                foundAtPrevious = true
+                result.push(...subResult);
+              } else {
+                foundAtPrevious = false;
+              }
+            }
+            return result.length ? result.flat() : null;
+          }
+          if (typeof content === 'object') {
+            const result = Object.keys(content)
+              .map(key => recursiveSearch(content[key], previousKey + ' -> ' + key))
+              .filter(Boolean);
+            return result.length ? result.flat() : null;
+          }
           return null;
         }
-        if (typeof content === 'string') {
-          return content.includes(searchText)
-            ? [previousKey + '->' + content]
-            : null;
+
+        try {
+          searchResult = recursiveSearch(appState, appStateKey) || [];
+        } catch (err) {
+          searchResult = [];
+          console.error('Failed to parse appState', err);
         }
-        if (Array.isArray(content)) {
-          const result = [];
-          let foundAtPrevious = false;
-          for (let i = 0; i < content.length; i++) {
-            const key = (typeof content[i - 1] === 'string' && !foundAtPrevious)
-              ? content[i - 1]
-              : String(i);
-            const subResult = recursiveSearch(content[i], previousKey + joinSymbol + key);
-            if (subResult?.length) {
-              foundAtPrevious = true
-              result.push(...subResult);
-            } else {
-              foundAtPrevious = false;
-            }
-          }
-          return result.length ? result.flat() : null;
+
+        if (searchResult.length === 0) {
+          searchResult.push('In appState');
         }
-        if (typeof content === 'object') {
-          const result = Object.keys(content)
-            .map(key => recursiveSearch(content[key], previousKey + ' -> ' + key))
-            .filter(Boolean);
-          return result.length ? result.flat() : null;
-        }
-        return null;
+
+      } else {
+        searchResult = [];
       }
 
-      let searchResult = recursiveSearch(appState, appStateKey);
+      if (
+        appContent.page?.[changesRecordKey] &&
+        JSON.stringify(appContent.page[changesRecordKey]).includes(searchText)
+      ) {
+        searchResult.push(Search.IN_CHANGES_HISTORY);
+      }
+
+      const modules = appContent.modules;
+      if (modules) {
+        Object.keys(modules).forEach(m => {
+          if (modules[m]?.data?.[appStateKey]?.includes(searchText)) {
+            searchResult.push(`In child module "${modules[m][moduleNameKey]}"`);
+          }
+        });
+      }
 
       if (searchResult?.length) {
         for (let i = 0; i < searchResult?.length; i++) {

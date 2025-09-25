@@ -34,7 +34,6 @@ class RetoolApi {
 
   async getAppContent(uuid, xsrfToken) {
     try {
-      console.log(`trying to export: `, { uuid, xsrfToken });
       return await this.exportApp(uuid, xsrfToken);
     } catch (error) {
       throw new Error(`Ошибка поиска в приложении ${uuid}: ${error.message}`);
@@ -43,7 +42,6 @@ class RetoolApi {
 
   async searchInApp(uuid, searchText, xsrfToken) {
     try {
-      console.log(`trying to export: `, { uuid, xsrfToken });
       const appContent = await this.exportApp(uuid, xsrfToken);
       return appContent.includes(searchText);
     } catch (error) {
