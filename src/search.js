@@ -52,7 +52,7 @@ export class Search {
         const isFound = appContent.includes(searchText);
         
         if (isFound) {
-          const usages = Search.deepSearchInApp(appContent, searchText) || [];
+          const usages = Search.deepSearchInApp(appContent, searchText, isCaseSensitive) || [];
           foundApps.push({
             name: page.name,
             usages
@@ -69,7 +69,7 @@ export class Search {
     return { foundApps, errorApps };
   }
 
-  static deepSearchInApp(appContent, searchText) {
+  static deepSearchInApp(appContent, searchText, isCaseSensitive = false) {
     try {
       if (typeof appContent === 'string') {
         appContent = JSON.parse(appContent);
@@ -79,9 +79,14 @@ export class Search {
       //   'appMaxWidth', 'appStyles', 'appTesting', 'experimentalFeatures',
       //   'folders', 'internationalizationSettings',
       // ];
-      const removeKeys = [
+      let removeKeys = [
         'plugins', '~#iOM', '^0', 'appState', 'v', '~#iR', '^2R', '^2K'
       ];
+      if (!isCaseSensitive) {
+        removeKeys = removeKeys.map(k => k.toLowerCase());
+      }
+
+      const joinSymbol = ' -> ';
 
       const recursiveSearch = (content, previousKey) => {
         if (!content || ['boolean', 'number'].includes(typeof content)) {
@@ -99,7 +104,7 @@ export class Search {
             const key = (typeof content[i - 1] === 'string' && !foundAtPrevious)
               ? content[i - 1]
               : String(i);
-            const subResult = recursiveSearch(content[i], previousKey + ' -> ' + key);
+            const subResult = recursiveSearch(content[i], previousKey + joinSymbol + key);
             if (subResult?.length) {
               foundAtPrevious = true
               result.push(...subResult);
@@ -118,7 +123,7 @@ export class Search {
         return null;
       }
 
-      let searchResult = recursiveSearch(appState, 'appState');
+      let searchResult = recursiveSearch(appState, isCaseSensitive ? 'appState' : 'appState');
 
       if (searchResult?.length) {
         for (let i = 0; i < searchResult?.length; i++) {
@@ -128,7 +133,7 @@ export class Search {
             searchResult[i] = match[1];
           } else {
             for (const key of removeKeys) {
-              str = str.replace(`${key} -> `, '').trim();
+              str = str.replace(key + joinSymbol, '').trim();
             }
             searchResult[i] = str;
           }
