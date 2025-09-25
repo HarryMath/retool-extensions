@@ -25,6 +25,7 @@ export class App {
 
   async handleSearchClick() {
     const searchText = UIUtils.getSearchValue();
+    const isCaseSensitive = UIUtils.isCaseSensitive();
 
     if (!UIUtils.isSearchValueValid()) {
       UIUtils.showError('Введите текст для поиска');
@@ -34,7 +35,7 @@ export class App {
     this.setSearchButtonState(false);
 
     try {
-      await Search.searchApps(searchText);
+      await Search.searchApps(searchText, isCaseSensitive);
     } finally {
       this.setSearchButtonState(true);
     }

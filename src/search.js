@@ -10,7 +10,7 @@ export class Search {
     return searchText.length >= VALIDATION.MIN_SEARCH_LENGTH;
   }
 
-  static async searchApps(searchText) {
+  static async searchApps(searchText, isCaseSensitive = false) {
     try {
       if (!this.validateSearchInput(searchText)) {
         UIUtils.showError(MESSAGES.SEARCH_TOO_SHORT);
@@ -26,7 +26,7 @@ export class Search {
       UIUtils.updateOutput(MESSAGES.LOADING_APPS);
       const pages = await retoolApi.getPages(xsrfToken);
 
-      const { foundApps, errorApps } = await this.searchInAllApps(pages, searchText, xsrfToken);
+      const { foundApps, errorApps } = await this.searchInAllApps(pages, searchText, xsrfToken, isCaseSensitive);
 
       UIUtils.showSearchResults(foundApps, errorApps);
 
@@ -36,7 +36,7 @@ export class Search {
     }
   }
 
-  static async searchInAllApps(pages, searchText, xsrfToken) {
+  static async searchInAllApps(pages, searchText, xsrfToken, isCaseSensitive = false) {
     const foundApps = [];
     const errorApps = [];
 
@@ -46,7 +46,9 @@ export class Search {
       UIUtils.showSearchProgress(i + 1, pages.length);
 
       try {
-        const appContent = await retoolApi.getAppContent(page.uuid, xsrfToken);
+        let appContent = await retoolApi.getAppContent(page.uuid, xsrfToken);
+        searchText = isCaseSensitive ? searchText : searchText.toLowerCase();
+        appContent = isCaseSensitive ? appContent : appContent.toLowerCase();
         const isFound = appContent.includes(searchText);
         
         if (isFound) {
