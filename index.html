@@ -176,25 +176,6 @@
     <button id="loadApps">Загрузить</button>
     <pre id="output"></pre>
 
-    <script>
-        // Detect Chrome theme and apply appropriate styles
-        function detectChromeTheme() {
-            // Check if Chrome is in dark mode
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                document.documentElement.setAttribute('data-theme', 'dark');
-            } else {
-                document.documentElement.setAttribute('data-theme', 'light');
-            }
-        }
-
-        // Listen for theme changes
-        if (window.matchMedia) {
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', detectChromeTheme);
-        }
-
-        // Initialize theme on load
-        document.addEventListener('DOMContentLoaded', detectChromeTheme);
-    </script>
     <script type="module" src="index.js"></script>
 </body>
 </html>

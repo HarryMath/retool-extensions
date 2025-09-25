@@ -18,15 +18,15 @@ export class UIUtils {
 
     if (foundApps.length > 0) {
       html += '<div style="margin-bottom: 16px;">';
-      html += `<h4 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">Найденные приложения (${foundApps.length}):</h4>`;
+      html += `<h4 style="margin: 0 0 8px 0; color: var(--text-color); font-size: 14px; font-weight: 600;">Найденные приложения (${foundApps.length}):</h4>`;
       html += '<ul style="margin: 0; padding-left: 16px;">';
       html += foundApps
         .map(app => {
           let appHtml = `<li style="margin: 6px 0; line-height: 1.4;">`;
-          appHtml += `<span>${app.name}</span>`;
+          appHtml += `<strong style="color: var(--text-color);">${app.name}</strong>`;
           if (app.usages && app.usages.length > 0) {
             appHtml += '<ul style="margin: 4px 0 0 0; padding-left: 16px;">';
-            appHtml += app.usages.map(usage => `<li style="margin: 2px 0; font-size: 12px; opacity: 0.8;">${usage}</li>`).join('');
+            appHtml += app.usages.map(usage => `<li style="margin: 2px 0; font-size: 12px; color: var(--text-color); opacity: 0.8;">${usage}</li>`).join('');
             appHtml += '</ul>';
           }
           appHtml += '</li>';
@@ -36,12 +36,12 @@ export class UIUtils {
       html += '</ul>';
       html += '</div>';
     } else {
-      html += `<p style="margin: 0; opacity: 0.7;">${MESSAGES.NO_RESULTS}</p>`;
+      html += `<p style="margin: 0; color: var(--text-color); opacity: 0.7;">${MESSAGES.NO_RESULTS}</p>`;
     }
 
     if (errorApps.length > 0) {
       html += '<div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">';
-      html += `<h4 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">Ошибки при поиске (${errorApps.length}):</h4>`;
+      html += `<h4 style="margin: 0 0 8px 0; color: var(--text-color); font-size: 14px; font-weight: 600;">Ошибки при поиске (${errorApps.length}):</h4>`;
       html += '<ul style="margin: 0; padding-left: 16px;">';
       html += errorApps.map(app => `<li style="margin: 4px 0; color: #dc3545; font-size: 13px;">${app.name} <span style="opacity: 0.7;">(${app.error})</span></li>`).join('');
       html += '</ul>';
