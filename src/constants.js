@@ -1,4 +1,3 @@
-export const API_BASE_URL = 'https://admin.walletbot.net';
 export const API_ENDPOINTS = {
   PAGES: '/api/pages',
   EXPORT: (uuid) => `/api/pages/uuids/${uuid}/export`
@@ -6,7 +5,6 @@ export const API_ENDPOINTS = {
 
 export const COOKIE_SETTINGS = {
   XSRF_TOKEN_NAME: 'xsrfToken',
-  DOMAIN: 'https://admin.walletbot.net'
 };
 
 export const VALIDATION = {

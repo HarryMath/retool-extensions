@@ -1,4 +1,5 @@
 import { COOKIE_SETTINGS } from '../constants.js';
+import { Env } from '../env.js';
 
 
 export const getCookie = (domain, name) => {
@@ -12,7 +13,7 @@ export const getCookie = (domain, name) => {
 
 export const getXsrfToken = async () => {
   return await getCookie(
-    COOKIE_SETTINGS.DOMAIN, 
+    Env.getCookieDomain(), 
     COOKIE_SETTINGS.XSRF_TOKEN_NAME
   );
 };

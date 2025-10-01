@@ -1,5 +1,6 @@
 import { UIUtils } from './utils/ui-utils.js';
 import { Search } from './search.js';
+import { Env } from './env.js';
 
 
 export class App {
@@ -11,6 +12,7 @@ export class App {
   initializeElements() {
     this.searchButton = document.getElementById('loadApps');
     this.searchInput = document.getElementById('search');
+    this.envSelect = document.getElementById('envSelect');
   }
 
 
@@ -20,6 +22,11 @@ export class App {
       if (event.key === 'Enter') {
         this.handleSearchClick().catch();
       }
+    });
+
+    this.envSelect.addEventListener('change', async (e) => {
+      const newIndex = Number(e.target.value);
+      await Env.setIndex(newIndex);
     });
   }
 
@@ -47,5 +54,22 @@ export class App {
       this.searchButton.disabled = !enabled;
       this.searchButton.textContent = enabled ? 'Загрузить' : 'Поиск...';
     }
+  }
+
+  async populateEnv() {
+    const hosts = Env.getHosts();
+    const labels = ['prod', 'stand 21', 'retool new'];
+    this.envSelect.innerHTML = '';
+    hosts.forEach((h, i) => {
+      const opt = document.createElement('option');
+      opt.value = String(i);
+      const url = h.replace(/\/$/, '');
+      const label = labels[i] ? ` (${labels[i]})` : '';
+      opt.textContent = `${url}${label}`;
+      if (i === Env.index) {
+        opt.selected = true;
+      }
+      this.envSelect.appendChild(opt);
+    });
   }
 }

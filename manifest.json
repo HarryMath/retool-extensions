@@ -11,7 +11,9 @@
     "sidePanel"
   ],
   "host_permissions": [
-    "https://admin.walletbot.net/*"
+    "https://admin.walletbot.net/*",
+    "https://retool.stand21.walletteam.org/*",
+    "https://retool-new.walletteam.org/*"
   ],
   "background": {
     "service_worker": "src/background.js"

@@ -3,5 +3,6 @@ import { ThemeManager } from './src/theme.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   ThemeManager.init();
-  new App();
+  const app = new App();
+  app.populateEnv().catch(console.error);
 });

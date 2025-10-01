@@ -1,9 +1,10 @@
-import { API_BASE_URL } from '../constants.js';
+import { Env } from '../env.js';
 
 
 class HttpClient {
   async request(url, options = {}) {
-    const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+    const base = Env.getBaseUrl();
+    const fullUrl = url.startsWith('http') ? url : `${base}${url}`;
     
     const defaultOptions = {
       credentials: 'include',
