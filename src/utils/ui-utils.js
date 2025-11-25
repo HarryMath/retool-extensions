@@ -9,8 +9,8 @@ export class UIUtils {
     outputElement.innerHTML = html;
   }
 
-  static showSearchProgress(current, total, pageName) {
-    this.updateOutput(MESSAGES.SEARCHING_PROGRESS(current, total, pageName));
+  static showSearchProgress(current, total) {
+    this.updateOutput(MESSAGES.SEARCHING_PROGRESS(current, total));
   }
 
   static showSearchResults(foundApps, errorApps) {

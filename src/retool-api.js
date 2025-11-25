@@ -39,15 +39,6 @@ class RetoolApi {
       throw new Error(`Ошибка поиска в приложении ${uuid}: ${error.message}`);
     }
   }
-
-  async searchInApp(uuid, searchText, xsrfToken) {
-    try {
-      const appContent = await this.exportApp(uuid, xsrfToken);
-      return appContent.includes(searchText);
-    } catch (error) {
-      throw new Error(`Ошибка поиска в приложении ${uuid}: ${error.message}`);
-    }
-  }
 }
 
 export const retoolApi = new RetoolApi();

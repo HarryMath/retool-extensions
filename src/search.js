@@ -7,6 +7,7 @@ import { UIUtils } from './utils/ui-utils.js';
 export class Search {
 
   static IN_CHANGES_HISTORY = 'In changes history';
+  static SEARCHED_COUNT = 0;
 
   static validateSearchInput(searchText) {
     return searchText.length >= VALIDATION.MIN_SEARCH_LENGTH;
@@ -28,6 +29,7 @@ export class Search {
       UIUtils.updateOutput(MESSAGES.LOADING_APPS);
       const pages = await retoolApi.getPages(xsrfToken);
 
+      Search.SEARCHED_COUNT = 0;
       const { foundApps, errorApps } = await this.searchInAllApps(pages, searchText, xsrfToken, isCaseSensitive);
 
       UIUtils.showSearchResults(foundApps, errorApps);
@@ -42,39 +44,51 @@ export class Search {
     const foundApps = [];
     const errorApps = [];
 
-    for (let i = 0; i < pages.length; i++) {
-      const page = pages[i];
+    const searchPromises = pages.map(page => Search.searchInPageSafeWithCounter(page, xsrfToken, searchText, isCaseSensitive, pages.length));
 
-      UIUtils.showSearchProgress(i + 1, pages.length, page.name);
-
-      try {
-        let appContent = await retoolApi.getAppContent(page.uuid, xsrfToken);
-        searchText = isCaseSensitive ? searchText : searchText.toLowerCase();
-        appContent = isCaseSensitive ? appContent : appContent.toLowerCase();
-        const isFound = appContent.includes(searchText);
-        
-        if (isFound) {
-          const usages = Search.deepSearchInApp(appContent, searchText, isCaseSensitive) || [];
-          if (usages.length === 1 && usages.includes(Search.IN_CHANGES_HISTORY)) {
-            continue; // skip this app because found only in changes history
-          }
-          if (usages.length === 0) {
-            console.log('Usages length 0 for app: ', page.name);
-          }
-          foundApps.push({
-            name: page.name,
-            usages
-          });
-        }
-      } catch (error) {
-        errorApps.push({
-          name: page.name,
-          error: error.message
-        });
+    const result = await Promise.all(searchPromises);
+    result.forEach(r => {
+      if (r?.status === 'success') {
+        foundApps.push(r);
+      } else if (r?.status === 'error') {
+        errorApps.push(r);
       }
-    }
+    });
 
     return { foundApps, errorApps };
+  }
+
+  static async searchInPageSafeWithCounter(page, xsrfToken, searchText, isCaseSensitive, totalCount) {
+    const result = await Search.searchInPageSafe(page, xsrfToken, searchText, isCaseSensitive);
+    UIUtils.showSearchProgress(++Search.SEARCHED_COUNT, totalCount)
+    return result;
+  }
+
+  static async searchInPageSafe(page, xsrfToken, searchText, isCaseSensitive = false) {
+    try {
+      let appContent = await retoolApi.getAppContent(page.uuid, xsrfToken);
+      searchText = isCaseSensitive ? searchText : searchText.toLowerCase();
+      appContent = isCaseSensitive ? appContent : appContent.toLowerCase();
+      const isFound = appContent.includes(searchText);
+
+      if (isFound) {
+        const usages = Search.deepSearchInApp(appContent, searchText, isCaseSensitive) || [];
+        if (usages.length === 1 && usages.includes(Search.IN_CHANGES_HISTORY)) {
+          return null; // skip this app because found only in changes history
+        }
+        return {
+          status: 'success',
+          name: page.name,
+          usages
+        };
+      }
+    } catch (err) {
+      return {
+        status: 'error',
+        name: page.name,
+        error: err.message,
+      }
+    }
   }
 
   static deepSearchInApp(appContent, searchText, isCaseSensitive = false) {
