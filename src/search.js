@@ -7,6 +7,7 @@ import { UIUtils } from './utils/ui-utils.js';
 export class Search {
 
   static IN_CHANGES_HISTORY = 'In changes history';
+  static IN_CHILD_MODULE = 'In child module';
   static SEARCHED_COUNT = 0;
 
   static validateSearchInput(searchText) {
@@ -54,6 +55,12 @@ export class Search {
         errorApps.push(r);
       }
     });
+
+    const getRelevantUsagesCount = (usages) => usages?.filter(
+      usage => usage !== Search.IN_CHANGES_HISTORY
+        && !usage.startsWith(`${Search.IN_CHILD_MODULE} "`)
+    ).length;
+    foundApps.sort((a, b) => getRelevantUsagesCount(b.usages) - getRelevantUsagesCount(a.usages));
 
     return { foundApps, errorApps };
   }
@@ -180,7 +187,7 @@ export class Search {
       if (modules) {
         Object.keys(modules).forEach(m => {
           if (modules[m]?.data?.[appStateKey]?.includes(searchText)) {
-            searchResult.push(`In child module "${modules[m][moduleNameKey]}"`);
+            searchResult.push(`${Search.IN_CHILD_MODULE} "${modules[m][moduleNameKey]}"`);
           }
         });
       }
