@@ -13,7 +13,10 @@ export const getCookie = (domain, name) => {
 
 export const getXsrfToken = async () => {
   return await getCookie(
-    Env.getCookieDomain(), 
+    Env.getCookieDomain(),
+    `__Host-${COOKIE_SETTINGS.XSRF_TOKEN_NAME}`
+  ) ?? await getCookie(
+    Env.getCookieDomain(),
     COOKIE_SETTINGS.XSRF_TOKEN_NAME
   );
 };
